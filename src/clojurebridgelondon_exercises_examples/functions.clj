@@ -141,3 +141,259 @@
 
 (average [{:angle 30} {:angle 90} {:angle 50}])
 ;; => 170/3
+
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Functions - older ClojureBridge curiculum
+
+
+;; EXERCISE: Find per-person share of bill among a group
+
+;; Create a new function called share-per-person.
+
+;; Modify our total-with-tip function, and call the new function share-per-person, that additionally takes in as an argument the number of people in the group for a bill. Have the function return the average bill amount per person.
+
+(defn share-per-person
+  "Share the cost of a bill evenly for everyone at the meal"
+  [meal-cost people]
+  (/ meal-cost people))
+
+
+(defn total-with-tip-per-person
+  "Given subtotal, return total after tax and tip per person (hard-coded)."
+  [subtotal tip-percent]
+  (share-per-person (* 1.08 subtotal (+ 1 tip-percent)) 2))
+
+(total-with-tip-per-person 12.50 0.18)
+(total-with-tip-per-person 12.50 0)
+
+
+
+;; EXERCISE: Find the average
+
+;; Create a function called average that takes a vector of bill amounts and returns the average of those amounts.
+
+;; Hint: You will need to use the functions reduce and count.
+
+;; Define a collection of the orders for a group of people at a resteraunt
+(def dine-in-orders [12.50 20 21 16 18.40])
+
+;; Define a collection of orders for a take-away for a party
+(def take-out-orders [6.00 6.00 7.95 6.25])
+
+;; Use the previously defined function, total-bill, to add tax to each of the order costs in the collection
+(map total-bill dine-in-orders)  ;=> [13.5 21.6 22.68 17.28 19.872]
+(map total-bill take-out-orders) ;=> [6.48 6.48 8.586 6.75]
+
+
+;; Lets look at map and reduce functions
+
+(reduce + dine-in-orders)
+
+;; So we can easily get the total cost of the orders, the average per person is simply the total divided by the number of orders
+
+;; Lets get the number of orders from the collection
+(count dine-in-orders)
+
+;; So joining these two together we can get the average
+(/ (reduce + dine-in-orders) (count dine-in-orders))
+
+;; Lets put this into a function so we have a name for this behaviour which we can call
+
+(defn total-bill-per-person
+  "Given subtotal of bill, return total after tax."
+  [individual-order-costs]
+  (/ (reduce + dine-in-orders) (count dine-in-orders)))
+
+(total-bill-per-person dine-in-orders)
+
+
+;; But wait, we have forgotten to include sales tax
+
+(defn total-bill-per-person-with-tax
+  "Given subtotal of bill, return total after tax."
+  [individual-order-costs]
+  (/ (reduce + (map total-bill dine-in-orders)) (count dine-in-orders)))
+
+(total-bill-per-person dine-in-orders)
+
+;; Oh no, we forgot the tip as well....
+
+(defn total-bill-per-person-with-tax-and-tip
+  "Given subtotal of bill, return total after tax."
+  [individual-order-costs]
+  (/ (reduce + (map total-with-tip dine-in-orders )) (count dine-in-orders)))
+
+(total-bill-per-person dine-in-orders)
+
+;;; This is not quite right, as we need to pass in the percentage of tip.... not sure how to do that, perhaps a partial function?
+
+;; We can use the function apply instead of reduce.  These functions can seem similar in concept, so lets see what we can do with apply to help you understand the difference
+
+
+;; Lets get the total cost of the dine-in orders
+(apply + dine-in-orders)
+
+;; Now if we divide by the number of orders in the collction, we can get the average
+(/ (apply + dine-in-orders) (count dine-in-orders) )
+
+;; This all looks the same, so lets look at the Clojure docs to try understand the difference
+
+
+;; > Note: Clojure is strict when it comes to functions as arguments.  This means that a function pased as an argument to another function is evaluated before it is passed as the argument.  So a function always recieves values as arguments, because a function always evaluated to a value (even if that value is nil).
+
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Functions from old ClojureBridge content
+;;
+;; - includes some more advanced examples
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; More functions
+
+
+;; Note for existing devs:  Clojure does not use = for assignment, so you dont need hacks like == for assignement.
+;; Clojure keeps it simple
+
+
+;; Naming conventions: Predicates?
+;; When a function is asking a question where the answer is either true or false, the naming convention is to add a ? to the end of the function name.  for example
+;; (true? (= 1 1))
+;; (false? (= 1 2))
+
+;; (vector? [1 2 3])
+
+
+
+;; EXERCISE: Modeling Yourself
+
+;; Make a map representing yourself. Make sure it contains your first name and last name. Then, add your hometown to the map using assoc or merge.
+
+;; Hint: First, create a function that returns the name when given a single person's map.  
+
+(def john
+  {:firstname "john" :lastname "stevenson"})
+
+(merge john {:hometomwn "Ripon"})
+(assoc john :hometomwn "Ripon")
+
+
+;; EXERCISE 2: Get the names of people
+
+;; Create a function called get-names that takes a vector of maps of people and returns a vector of their names.
+
+;; Here is an example of how it should work:
+
+(get-names [{:first "Margaret" :last "Atwood"}
+            {:first "Doris" :last "Lessing"}
+            {:first "Ursula" :last "Le Guin"}
+            {:first "Alice" :last "Munro"}])
+
+;=> ["Margaret Atwood" "Doris Lessing" "Ursula Le Guin" "Alice Munro"]
+
+
+(defn get-names [person]
+  (let [name (:name person)
+        age  (:age person)]
+    (str name)))
+
+
+(macroexpand '(let [name (:name person)
+                    age (:age person)]
+                (str name)))
+
+;; (macroexpand let*)
+
+;; A shorthand version of get-name function, using the keyword as the get function
+(defn get-names-shorthand [person]
+  (:name person))
+
+(get-names {:name "john stevenson" :age 21})
+
+
+
+
+;; EXERCISE: Modeling your classmates
+
+;; First, take the map you made about yourself.
+
+;; Then, create a vector of maps containing the first name, last name and hometown of two or three other classmates around you.
+
+;; Lastly, add your map to their information using conj.
+
+;; Use the get-names function from the previous Exercise to output a list of the names.
+
+
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Predicates, Sequence comprehension & laziness
+
+;; Predicates
+;; A predicate is function that will return true or false.
+;; The naming convention in Clojure is to add a ? to the end of the name.
+
+(even? 7)
+(even? 8)
+
+;; Range generates an infinate sequence, however using the take function
+;; a specific sequence range is returned.
+(take 1000 (range))
+
+;; return only the even numbers
+(def evens
+  (filter even? (take 1000 (range))))
+
+
+;; Using an anonymous function with the filter function to only return values
+;; where the value of dividing a value by 3 has an even remainder
+;; (filter (fn [x] (even? (mod x 3))) '(1 2 3 4 5 6))
+
+(def evens
+  (filter (fn [x] (even? (mod x 3))) (filter even? (take 1000 (range)))))
+
+evens
+
+;; map, take, drop, filter, rest :: sequence->sequence
+;; reduce, first  :: sequence->single
+(def evens
+  (->>
+   (range)
+   (take 1000)
+   (filter even?)
+   (filter (fn [x] (even? (mod x 3))))))
+
+
+;;;;;;;;;;;;;;;;;;;
+;; Threading Macros
+
+;; Using the Threading macros provides a simple way to chain functions together
+;; The reader macro for comments can be used to only run specific functions in the chain.
+;; In this Thread first example, the value of the previous function is the first
+;; argument to the next function
+;; Uncomment each line and evaluate to see the value returned by each expression
+(->
+  {}
+  #_(assoc ,,, :x {:x1 8})
+  #_(update-in ,,, [:x :x1] inc)
+  #_(assoc ,,, :y 99 :z 199999)
+  #_(dissoc ,,, :z))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Understanding Clojure macros
+
+;; Macros provide a way to extend the Clojure syntax and are typically used
+;; to maintain simplicity in the language.
+;; To look under the covers of Clojure macros you can use the macroexpand function
+;; (clojure.walk/macroexpand-all ')
+
+(clojure.walk/macroexpand-all '(defn expand-me [args] (str "behaviour of function")))
+
+;; expands to
+;; (def expand-me (fn* ([args] (str "behaviour of function"))))
