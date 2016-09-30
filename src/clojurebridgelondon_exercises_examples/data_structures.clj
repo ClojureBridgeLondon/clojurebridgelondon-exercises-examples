@@ -74,6 +74,64 @@
 ;; => 23
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;
+;; Alternative approach - using days of the week as a lookup map
+
+;; Make a vector of the high temperatues for the next 7 days in the town where you live. Then use the nth function to get the high temperature for next Tuesday.
+
+(def weather-temperatures-forecast [5 7 13 12 11 12 9])
+
+(nth weather-temperatures-forecast 1)
+
+;; We could make this clearer with a nice little map to represent days of the week
+
+(def days-of-the-week {:monday 0
+                                :tuesday 1
+                                :wednesday 2
+                                :thursday 3
+                                :friday 4
+                                :saturday 5
+                                :sunday 6})
+
+(nth weather-temperatures-forecast (days-of-the-week :tuesday))
+
+;; or even fancier with the threading macro
+
+(->
+ weather-temperatures-forecast
+ (nth (days-of-the-week :tuesday)))
+
+
+;; Making a longer range forcast by conjoin (joining) more temperatures to our forcast data structure
+
+(conj weather-temperatures-forecast 13 15 19 20 22 21 24)
+
+;; So what does the forcast data structure look like now?
+
+weather-temperatures-forecast
+
+;; Should we wish to keep this longer forcast, we can assign a name to it (makeing a clojure symbol)
+
+(def long-range-weather-forecast
+  (conj weather-temperatures-forecast 13 15 19 20 22 21 24))
+
+;; Now we can access the full long range forecast
+long-range-weather-forecast
+
+;; Although underlying data structures cannont be changed in Clojure (they are immutable),
+;; you can change names and point them to new data structures
+
+;; So if we want it to look like we have updated our original forcast data, then we can point the original
+;; name to the new data structure we are creating
+(def weather-temperatures-forecast
+  (conj weather-temperatures-forecast 13 15 19 20 22 21 24))
+
+;; When we re-evaluate the weather-temperature-forecast it has all the new values
+weather-temperatures-forecast
+
+
+
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EXERCISE 3: See turtles states
